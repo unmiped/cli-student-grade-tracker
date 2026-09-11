@@ -81,6 +81,20 @@ function showAllStudents() {
     }
 }
 
+function isValidInteger(value) {
+    return Number.isInteger(value);
+}
+function isValidNumber(value) {
+    return Number.isFinite(value);
+}
+function isLimitedNumber(value, min, max) {
+    if (!Number.isFinite(value)) {
+        return false;
+    }
+    return value >= min && value <= max;
+}
+
+
 const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout
@@ -94,7 +108,7 @@ function showMenu() {
     rl.question('Choose an option: ', (answer) => {
         const ans = Number(answer);
 
-        if (ans > 7 || ans <= 0 || Number.isNaN(ans)) {
+        if (!isLimitedNumber(ans, 1, 7) || !isValidInteger(ans)) {
             invalidMenuOptionMessage();
             showMenu();
             return;
@@ -113,7 +127,7 @@ function showMenu() {
         else if (ans === 3) {
             rl.question('Student ID: ', (newStudentID) => {
                 const id = Number(newStudentID);
-                if (Number.isNaN(id)) {
+                if (!isValidNumber(id) || !isValidInteger(id) || !isLimitedNumber(id, 1, 1000)) { // 1000 for now, increase later
                     invalidStudentIDMessage();
                     showMenu();
                     return;
@@ -121,15 +135,15 @@ function showMenu() {
 
                 rl.question('Student name: ', (newStudentName) => {
                     const name = newStudentName.trim();
-                    if (!name) {
-                        invalidStudentIDMessage();
+                    if (!name || isValidNumber(Number(name))) {
+                        invalidStudentNameMessage();
                         showMenu();
                         return;
                     }
 
                     const newStudent = createStudent(name, id, [0]);
                     students.push(newStudent);
-                    console.log('Successfully created a new student!');
+                    console.log(`${colors.green}Successfully added student ${newStudent.firstName}!${colors.reset}`);
                     showMenu();
                 });
             });
@@ -137,7 +151,7 @@ function showMenu() {
         else if (ans === 4) {
             rl.question('Student ID: ', (stdID) => {
                 const id = Number(stdID);
-                if (Number.isNaN(id)) {
+                if (!isValidNumber(id)) {
                     invalidStudentIDMessage();
                     showMenu();
                     return;
@@ -149,7 +163,7 @@ function showMenu() {
         else if (ans === 5) {
             rl.question('Student ID: ', (oldStudentID) => {
                 const id = Number(oldStudentID);
-                if (Number.isNaN(id)) {
+                if (!isValidNumber(id)) {
                     invalidStudentIDMessage();
                     showMenu();
                     return;
@@ -170,7 +184,7 @@ function showMenu() {
         else if (ans === 6) {
             rl.question('Student ID: ', (stdID) => {
                 const id = Number(stdID);
-                if (findStudentById(id) == null || Number.isNaN(id)) {
+                if (findStudentById(id) == null || !isValidNumber(id)) {
                     invalidStudentIDMessage();
                     showMenu();
                     return;
@@ -178,19 +192,20 @@ function showMenu() {
 
                 rl.question('Grade: ', (stdGrade) => {
                     const grade = Number(stdGrade);
-                    if (grade > 100 || grade < 0) {
+                    if (!isLimitedNumber(grade, 0, 100)) {
                         invalidStudentGradeMessage();
                         showMenu();
                         return;
                     }
-                    else if (Number.isNaN(grade)) {
+                    else if (!isValidNumber(grade)) {
                         console.log(`${colors.red}Cannot add text as a grade.${colors.reset}`);
                         showMenu();
                         return;
                     }
-
-                    addGradeToStudent(id, grade);
-                    showMenu();
+                    else {
+                        addGradeToStudent(id, grade.toFixed(2));
+                        showMenu();
+                    }
                 });
             });
         }
@@ -208,6 +223,14 @@ function invalidStudentIDMessage() {
     console.log(`${colors.red}Please enter a valid student ID.${colors.reset}`);
 }
 
+function invalidStudentNameMessage() {
+    console.log(`${colors.red}Please enter a valid student name.${colors.reset}`);
+}
+
+function duplicateStudentIDMessage() {
+    console.log(`${colors.red}A student already has this ID, please choose another.${colors.reset}`);
+}
+
 function invalidStudentGradeMessage() {
     console.log(`${colors.red}Please enter a value between 0 and 100.${colors.reset}`);
 }
@@ -219,3 +242,7 @@ function studentInfoMessage(s, savg) {
 // check gpt chat, invalid input control and pretty output
 
 //show all students, show students count, add student, find student, remove student, add grade to student, exit
+
+//invalid possibilities: -1, 1000, nb in txt case, txt in nb case, 1.5
+
+// full invalid checks: add new student, find student, remove student, add grade
