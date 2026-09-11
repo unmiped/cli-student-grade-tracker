@@ -49,11 +49,11 @@ function findStudentById(id) {
 function addGradeToStudent(id, value) {
     const student = findStudentById(id);
     if (student == null) {
-            console.log('Cannot add grade to non existent student.');
+            console.log('-');
         } 
     else {
-            student.grades.push(value); 
-            console.log(`${colors.green}Added grade ${value} to ${student.firstName}!${colors.reset}`);
+            student.grades.push(value);
+            console.log(`${colors.green}Successfully added grade ${value} to ${student.firstName}!${colors.reset}`);
         }
 }
 
@@ -62,11 +62,11 @@ function showStudentInfo(id) {
     const student = findStudentById(id);
 
     if (student == null) {
-            console.log(`${colors.red}Student not found.${colors.reset}`);
+            invalidStudentIDMessage();
         } 
     else {
             const studentAvg = calculateAverage(student);
-            console.log(`${colors.blue}First name: ${colors.reset}` + student.firstName + `${colors.blue} ID: ${colors.reset}` + student.id + `${colors.blue} Grades: ${colors.reset}` + student.grades + `${colors.blue} Average: ${colors.reset}` + studentAvg);
+            studentInfoMessage(student, studentAvg);
         }
 }
 
@@ -77,7 +77,7 @@ function showAllStudents() {
     }
     for (const student of students) {
         const studentAvg = calculateAverage(student);
-        console.log(`${colors.blue}First name: ${colors.reset}` + student.firstName + `${colors.blue} ID: ${colors.reset}` + student.id + `${colors.blue} Grades: ${colors.reset}` + student.grades + `${colors.blue} Average: ${colors.reset}` + studentAvg);
+        studentInfoMessage(student, studentAvg);
     }
 }
 
@@ -87,56 +87,135 @@ const rl = readline.createInterface({
 });
 
 console.log(`${colors.blue}--------- Student Grade Tracker ---------${colors.reset}`);
-console.log('1. Show all students\n2. Find a student\n3. Add grade to student');
-console.log(`${colors.red}4. Exit${colors.reset}`);
+console.log('1. Show all students\n2. Total students count\n3. Add new student\n4. Find a student\n5. Remove a student\n6. Add grade to a student\n7. Exit');
 showMenu();
 
 function showMenu() {
     rl.question('Choose an option: ', (answer) => {
-        if(answer > 4 || answer <= 0) {
-            console.log(`${colors.red}Invlid index.${colors.reset}`);
+        const ans = Number(answer);
+
+        if (ans > 7 || ans <= 0 || Number.isNaN(ans)) {
+            invalidMenuOptionMessage();
             showMenu();
+            return;
         }
-        if(answer == 1) {
+
+        if (ans === 1) {
             showAllStudents();
             showMenu();
+            return;
         }
-        if(answer == 2) {
-            rl.question('Student ID? ', (stdID) => {
+        else if (ans === 2) {
+            console.log('Total students: ' + Number(students.length));
+            showMenu();
+            return;
+        }
+        else if (ans === 3) {
+            rl.question('Student ID: ', (newStudentID) => {
+                const id = Number(newStudentID);
+                if (Number.isNaN(id)) {
+                    invalidStudentIDMessage();
+                    showMenu();
+                    return;
+                }
+
+                rl.question('Student name: ', (newStudentName) => {
+                    const name = newStudentName.trim();
+                    if (!name) {
+                        invalidStudentIDMessage();
+                        showMenu();
+                        return;
+                    }
+
+                    const newStudent = createStudent(name, id, [0]);
+                    students.push(newStudent);
+                    console.log('Successfully created a new student!');
+                    showMenu();
+                });
+            });
+        }
+        else if (ans === 4) {
+            rl.question('Student ID: ', (stdID) => {
                 const id = Number(stdID);
+                if (Number.isNaN(id)) {
+                    invalidStudentIDMessage();
+                    showMenu();
+                    return;
+                }
                 showStudentInfo(id);
                 showMenu();
-            })
+            });
         }
-        if(answer == 3) {
-            rl.question('Student ID? ', (stdID) => {
-                const id = Number(stdID);
-                if(findStudentById(id) == null) {
-                    console.log(`${colors.red}Invlid student ID.${colors.reset}`);
+        else if (ans === 5) {
+            rl.question('Student ID: ', (oldStudentID) => {
+                const id = Number(oldStudentID);
+                if (Number.isNaN(id)) {
+                    invalidStudentIDMessage();
                     showMenu();
+                    return;
                 }
-                rl.question('Grade? ', (stdGrade) => {
-                    const id = Number(stdID);
-                    const grade = Number(stdGrade);
-                    if(stdGrade > 100) {
-                        console.log(`${colors.red}Cannot add grade higher than 100.${colors.reset}`);
-                        showMenu();
-                    }
-                    else if(stdGrade < 0) {
-                        console.log(`${colors.red}Cannot add grade lower than 0.${colors.reset}`);
-                        showMenu();
-                    }
-                    else {
-                        addGradeToStudent(id, grade);
-                        showMenu();
-                    }
-            })
-            })
+
+                const studentIndex = students.findIndex(student => student.id === id);
+                if (studentIndex === -1) {
+                    invalidStudentIDMessage();
+                    showMenu();
+                    return;
+                }
+
+                const removedStudent = students.splice(studentIndex, 1)[0];
+                console.log(`${colors.green}Successfully removed student ${removedStudent.firstName}!${colors.reset}`);
+                showMenu();
+            });
         }
-        if(answer == 4) {
+        else if (ans === 6) {
+            rl.question('Student ID: ', (stdID) => {
+                const id = Number(stdID);
+                if (findStudentById(id) == null || Number.isNaN(id)) {
+                    invalidStudentIDMessage();
+                    showMenu();
+                    return;
+                }
+
+                rl.question('Grade: ', (stdGrade) => {
+                    const grade = Number(stdGrade);
+                    if (grade > 100 || grade < 0) {
+                        invalidStudentGradeMessage();
+                        showMenu();
+                        return;
+                    }
+                    else if (Number.isNaN(grade)) {
+                        console.log(`${colors.red}Cannot add text as a grade.${colors.reset}`);
+                        showMenu();
+                        return;
+                    }
+
+                    addGradeToStudent(id, grade);
+                    showMenu();
+                });
+            });
+        }
+        else {
             rl.close();
         }
-    })
+    });
+}
+
+function invalidMenuOptionMessage() {
+    console.log(`${colors.red}Please choose a valid menu option.${colors.reset}`);
+}
+
+function invalidStudentIDMessage() {
+    console.log(`${colors.red}Please enter a valid student ID.${colors.reset}`);
+}
+
+function invalidStudentGradeMessage() {
+    console.log(`${colors.red}Please enter a value between 0 and 100.${colors.reset}`);
+}
+
+function studentInfoMessage(s, savg) {
+    console.log(`${colors.blue}First name: ${colors.reset}` + s.firstName + `${colors.blue} ID: ${colors.reset}` + s.id + `${colors.blue} Grades: ${colors.reset}` + s.grades + `${colors.blue} Average: ${colors.reset}` + savg);
 }
 
 // check gpt chat, invalid input control and pretty output
+
+//show all students, show students count, add student, find student, remove student, add grade to student, exit
