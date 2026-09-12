@@ -101,7 +101,8 @@ const rl = readline.createInterface({
 });
 
 console.log(`${colors.blue}--------- Student Grade Tracker ---------${colors.reset}`);
-console.log('1. Show all students\n2. Total students count\n3. Add new student\n4. Find a student\n5. Remove a student\n6. Add grade to a student\n7. Exit');
+console.log('1. Show all students\n2. Total students count\n3. Add new student\n4. Find a student\n5. Remove a student\n6. Add grade to a student');
+console.log(`${colors.red}7. Exit${colors.reset}`);
 showMenu();
 
 function showMenu() {
@@ -236,7 +237,7 @@ function invalidStudentGradeMessage() {
 }
 
 function studentInfoMessage(s, savg) {
-    console.log(`${colors.blue}First name: ${colors.reset}` + s.firstName + `${colors.blue} ID: ${colors.reset}` + s.id + `${colors.blue} Grades: ${colors.reset}` + s.grades + `${colors.blue} Average: ${colors.reset}` + savg);
+    console.log(`${colors.blue}First name: ${colors.reset}` + s.firstName + '\n' + `${colors.blue}ID: ${colors.reset}` + s.id + '\n' + `${colors.blue}Grades: ${colors.reset}` + s.grades + '\n' + `${colors.blue}Average: ${colors.reset}` + savg);
 }
 
 // check gpt chat, invalid input control and pretty output
