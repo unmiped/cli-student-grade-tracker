@@ -9,6 +9,8 @@ const colors = {
     cyan: "\x1b[36m"
 };
 
+const totalStudentsLimit = 1250;
+
 function createStudent(firstName, id, grades) {
     return {
         firstName: firstName,
@@ -49,7 +51,7 @@ function findStudentById(id) {
 function addGradeToStudent(id, value) {
     const student = findStudentById(id);
     if (student == null) {
-            console.log('-');
+            console.log(`${colors.red}Unable to add the grade: no student was found with that ID.${colors.reset}`);
         } 
     else {
             student.grades.push(value);
@@ -128,8 +130,13 @@ function showMenu() {
         else if (ans === 3) {
             rl.question('Student ID: ', (newStudentID) => {
                 const id = Number(newStudentID);
-                if (!isValidNumber(id) || !isValidInteger(id) || !isLimitedNumber(id, 1, 1000)) { // 1000 for now, increase later
+                if (!isValidNumber(id) || !isValidInteger(id) || !isLimitedNumber(id, 1, totalStudentsLimit)) {
                     invalidStudentIDMessage();
+                    showMenu();
+                    return;
+                }
+                if(findStudentById(id) !== null) {
+                    duplicateStudentIDMessage();
                     showMenu();
                     return;
                 }
@@ -152,7 +159,7 @@ function showMenu() {
         else if (ans === 4) {
             rl.question('Student ID: ', (stdID) => {
                 const id = Number(stdID);
-                if (!isValidNumber(id)) {
+                if (!isValidNumber(id) || !isValidInteger(id) || !isLimitedNumber(id, 1, totalStudentsLimit)) {
                     invalidStudentIDMessage();
                     showMenu();
                     return;
@@ -164,7 +171,7 @@ function showMenu() {
         else if (ans === 5) {
             rl.question('Student ID: ', (oldStudentID) => {
                 const id = Number(oldStudentID);
-                if (!isValidNumber(id)) {
+                if (!isValidNumber(id) || !isValidInteger(id) || !isLimitedNumber(id, 1, totalStudentsLimit)) {
                     invalidStudentIDMessage();
                     showMenu();
                     return;
@@ -185,7 +192,7 @@ function showMenu() {
         else if (ans === 6) {
             rl.question('Student ID: ', (stdID) => {
                 const id = Number(stdID);
-                if (findStudentById(id) == null || !isValidNumber(id)) {
+                if (findStudentById(id) == null || !isValidNumber(id) || !isValidInteger(id) || !isLimitedNumber(id, 1, totalStudentsLimit)) {
                     invalidStudentIDMessage();
                     showMenu();
                     return;
@@ -198,13 +205,8 @@ function showMenu() {
                         showMenu();
                         return;
                     }
-                    else if (!isValidNumber(grade)) {
-                        console.log(`${colors.red}Cannot add text as a grade.${colors.reset}`);
-                        showMenu();
-                        return;
-                    }
                     else {
-                        addGradeToStudent(id, grade.toFixed(2));
+                        addGradeToStudent(id, Number(grade.toFixed(2)));
                         showMenu();
                     }
                 });
@@ -217,23 +219,23 @@ function showMenu() {
 }
 
 function invalidMenuOptionMessage() {
-    console.log(`${colors.red}Please choose a valid menu option.${colors.reset}`);
+    console.log(`${colors.red}That option is not available. Please choose a number from 1 to 7.${colors.reset}`);
 }
 
 function invalidStudentIDMessage() {
-    console.log(`${colors.red}Please enter a valid student ID.${colors.reset}`);
+    console.log(`${colors.red}Invalid student ID. Please enter a whole number between 1 and ${totalStudentsLimit}.${colors.reset}`);
 }
 
 function invalidStudentNameMessage() {
-    console.log(`${colors.red}Please enter a valid student name.${colors.reset}`);
+    console.log(`${colors.red}Invalid student name. Please enter a non-empty name, not a number.${colors.reset}`);
 }
 
 function duplicateStudentIDMessage() {
-    console.log(`${colors.red}A student already has this ID, please choose another.${colors.reset}`);
+    console.log(`${colors.red}That student ID is already in use. Please choose a different ID.${colors.reset}`);
 }
 
 function invalidStudentGradeMessage() {
-    console.log(`${colors.red}Please enter a value between 0 and 100.${colors.reset}`);
+    console.log(`${colors.red}Invalid grade. Please enter a number between 0 and 100.${colors.reset}`);
 }
 
 function studentInfoMessage(s, savg) {
@@ -244,6 +246,6 @@ function studentInfoMessage(s, savg) {
 
 //show all students, show students count, add student, find student, remove student, add grade to student, exit
 
-//invalid possibilities: -1, 1000, nb in txt case, txt in nb case, 1.5
+//invalid possibilities: values outside 1 to totalStudentsLimit, nb in txt case, txt in nb case, 1.5
 
 // full invalid checks: add new student, find student, remove student, add grade
